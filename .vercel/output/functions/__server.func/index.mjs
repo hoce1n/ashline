@@ -25,7 +25,7 @@ var grokOgIdentity = { "site": {
 * shared by the Vite plugin and Nitro middleware. Plain ESM so `node --test`
 * and the Nitro bundler can both consume it.
 */
-var DEFAULT_APP_NAME = "Grok App";
+var DEFAULT_APP_NAME = "Ashline";
 var OG_SITE_REL_PATH = "src/lib/og/site.json";
 var SHARE_META_KEYS = /* @__PURE__ */ new Set([
 	"og:title",
@@ -67,7 +67,7 @@ function appNameFromHost(hostHeader) {
 	if (!host.endsWith(".grok.me")) return DEFAULT_APP_NAME;
 	const slug = host.split(".")[0] ?? "";
 	if (!slug || slug === "www" || !/^[a-z0-9-]{1,63}$/.test(slug)) return DEFAULT_APP_NAME;
-	return slug.split("-").filter(Boolean).map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ") || "Grok App";
+	return slug.split("-").filter(Boolean).map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ") || "Ashline";
 }
 /** True for Vercel system domains. Envoy rewrites origin Host to these; they SSO-protect `/og.jpg`. */
 function isVercelSystemHost(host) {
@@ -218,8 +218,8 @@ function resolveOgTitle(site = {}, appName = DEFAULT_APP_NAME, host = "", docume
 	const fromDoc = String(documentTitle ?? "").trim();
 	if (fromDoc) return fromDoc;
 	const fromHost = appNameFromHost(host);
-	if (fromHost && fromHost !== "Grok App") return fromHost;
-	return String(appName ?? "").trim() || "Grok App";
+	if (fromHost && fromHost !== "Ashline") return fromHost;
+	return String(appName ?? "").trim() || "Ashline";
 }
 function siteHasCustomCard(site = {}) {
 	return String(site.card ?? "").toLowerCase() === "custom";
@@ -288,7 +288,7 @@ function normalizeHeadContext(ctx = {}) {
 	const cwd = ctx.cwd ?? process.cwd();
 	const site = applyCustomCardFromFs(ctx.site !== void 0 ? ctx.site : snapshotOgIdentity(cwd).site, cwd);
 	return {
-		appName: resolveOgTitle(site, ctx.appName ?? "Grok App", ctx.host ?? ""),
+		appName: resolveOgTitle(site, ctx.appName ?? "Ashline", ctx.host ?? ""),
 		projectId: ctx.projectId ?? readGrokProjectId(),
 		creator: ctx.creator ?? readXCreator(),
 		creatorId: ctx.creatorId ?? readXCreatorId(),
@@ -301,7 +301,7 @@ function injectGrokPwaHead(html, ctx = {}) {
 	if (typeof html !== "string") return html;
 	const { site, projectId, creator, creatorId, host, cwd } = normalizeHeadContext(ctx);
 	const documentTitle = titleFromDocument(html);
-	const appName = resolveOgTitle(site, ctx.appName ?? "Grok App", host, documentTitle);
+	const appName = resolveOgTitle(site, ctx.appName ?? "Ashline", host, documentTitle);
 	let next = stripShareMetaTags(html);
 	const missing = grokPwaHeadTags(appName).filter(([key]) => {
 		if (key === "manifest") return !next.includes("href=\"/__grok/manifest.webmanifest\"");
