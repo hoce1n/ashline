@@ -1,0 +1,15 @@
+<!doctype html><html><body style="margin:0;background:#222">
+<canvas id="c32" width="32" height="32" style="image-rendering:pixelated"></canvas>
+<canvas id="c16" width="16" height="16" style="image-rendering:pixelated;margin-left:8px"></canvas>
+<img id="s" src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%0A%20%20%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%230c0c0d%22%2F%3E%0A%20%20%3Crect%20x%3D%224%22%20y%3D%2215%22%20width%3D%2224%22%20height%3D%222%22%20rx%3D%221%22%20fill%3D%22%23c9cdd4%22%2F%3E%0A%20%20%3Crect%20x%3D%2213%22%20y%3D%2215%22%20width%3D%226%22%20height%3D%222%22%20rx%3D%221%22%20fill%3D%22%23c45c4a%22%2F%3E%0A%3C%2Fsvg%3E%0A" width="128" height="128">
+<script>
+const img = document.getElementById('s');
+img.onload = () => {
+  for (const [id,s] of [['c32',32],['c16',16]]) {
+    const c = document.getElementById(id);
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img,0,0,s,s);
+  }
+  document.title = 'ready';
+};
+</script></body></html>

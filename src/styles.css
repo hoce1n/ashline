@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0c0c0d;
+  --color-surface: #161618;
+  --color-surface-2: #1c1c1f;
+  --color-fg: #f3f2ef;
+  --color-muted: #8b8b90;
+  --color-subtle: #6a6a70;
+  --color-border: #2a2a2e;
+  --color-accent: #c9cdd4;
+  --color-accent-fg: #0c0c0d;
+  --color-danger: #c45c4a;
+  --color-ok: #7d9a78;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Syne", ui-sans-serif, system-ui, sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html,
+  body,
+  #app {
+    min-height: 100dvh;
+    background: var(--color-bg);
+    color: var(--color-fg);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+}
+
+@keyframes ash-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes ash-pop {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.ash-enter {
+  animation: ash-enter 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.ash-enter-2 {
+  animation: ash-enter 400ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both;
+}
+
+.ash-enter-3 {
+  animation: ash-enter 400ms cubic-bezier(0.22, 1, 0.36, 1) 140ms both;
+}
+
+.ash-enter-4 {
+  animation: ash-enter 400ms cubic-bezier(0.22, 1, 0.36, 1) 200ms both;
+}
+
+.ash-pop {
+  animation: ash-pop 250ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ash-enter,
+  .ash-enter-2,
+  .ash-enter-3,
+  .ash-enter-4,
+  .ash-pop {
+    animation: none;
+  }
+}

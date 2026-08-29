@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "ASHLINE",
+      "hasCanvas": true,
+      "bodyTextLen": 148,
+      "bodyTextHash": "29ed2daee911333059a08d9f43b0684815907a97c2a5b2feb6d26e9af872feac",
+      "bodyTextPrefix": "DUSK RIDGE COURIER ASHLINE The highway is coming apart. Jump the",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "ASHLINE",
+      "hasCanvas": true,
+      "bodyTextLen": 123,
+      "bodyTextHash": "acc1e1860d0455d54d6bae3a896c49bce4063943a5eea27e961f72029fd99d91",
+      "bodyTextPrefix": "DUSK RIDGE COURIER ASHLINE The highway is coming apart. Jump the",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}
