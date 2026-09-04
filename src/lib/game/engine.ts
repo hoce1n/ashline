@@ -7,9 +7,9 @@ export const WORLD_H = 720;
 const GROUND_Y = 598;
 const PLAYER_X = 248;
 const STEP = 1 / 60;
-const GRAVITY = 2650;
-const JUMP_V = -980;
-const JUMP_CUT = 0.42;
+const GRAVITY = 2400;
+const JUMP_V = -1180;
+const JUMP_CUT = 0.72;
 const MAX_FALL = 1500;
 const SLIDE_TIME = 0.5;
 const COYOTE = 0.1;
@@ -156,6 +156,8 @@ export class Engine {
   private oy = 0;
   private worldTop = 0;
   private worldBottom = WORLD_H;
+  private worldLeft = 0;
+  private worldRight = WORLD_W;
 
   private state: GameState = "title";
   private scroll = 0;
@@ -227,6 +229,8 @@ export class Engine {
     this.input.attach(this.canvas);
     this.resize();
     window.addEventListener("resize", this.resize);
+    window.visualViewport?.addEventListener("resize", this.resize);
+    window.visualViewport?.addEventListener("scroll", this.resize);
     document.addEventListener("visibilitychange", this.onVis);
     this.resetWorld(true);
     this.emitHud(true);
@@ -244,6 +248,8 @@ export class Engine {
     cancelAnimationFrame(this.raf);
     this.input.detach();
     window.removeEventListener("resize", this.resize);
+    window.visualViewport?.removeEventListener("resize", this.resize);
+    window.visualViewport?.removeEventListener("scroll", this.resize);
     document.removeEventListener("visibilitychange", this.onVis);
   }
 
@@ -256,6 +262,10 @@ export class Engine {
 
   tapJump() {
     this.input.tapJump();
+  }
+
+  setJumpHeld(held: boolean) {
+    this.input.setJumpHeld(held);
   }
 
   tapSlide() {
@@ -292,20 +302,19 @@ export class Engine {
     this.viewH = h;
     this.canvas.width = Math.floor(w * this.dpr);
     this.canvas.height = Math.floor(h * this.dpr);
-    this.canvas.style.width = `${w}px`;
-    this.canvas.style.height = `${h}px`;
-    // Cover-scale cropped the runner off the left on tall phones. Fit the
-    // full 16:9 playfield, then pin the ground above on-screen controls.
+    this.canvas.style.width = "100%";
+    this.canvas.style.height = "100%";
     const portrait = h > w;
-    const padBottom = portrait && w < 760 ? 96 : 0;
+    const padBottom = portrait && w < 760 ? 88 : 0;
     const availH = Math.max(1, h - padBottom);
-    this.scale = Math.min(w / WORLD_W, availH / WORLD_H);
-    this.ox = (w / this.scale - WORLD_W) / 2;
+    this.scale = Math.max(w / WORLD_W, availH / WORLD_H);
+    this.ox = 0;
     const extraY = availH / this.scale - WORLD_H;
-    const groundMargin = 12 / this.scale;
-    this.oy = Math.max(0, extraY - groundMargin);
+    this.oy = extraY > 0 ? extraY * 0.72 : extraY * 0.35;
     this.worldTop = -this.oy;
     this.worldBottom = -this.oy + h / this.scale;
+    this.worldLeft = -this.ox;
+    this.worldRight = -this.ox + w / this.scale;
   };
 
   private loop = (now: number) => {
@@ -472,10 +481,9 @@ export class Engine {
       this.audio.jump();
       this.burst(PLAYER_X + 16, GROUND_Y - 6, 10, "dust");
     }
-    if (!a.jumpHeld) this.jumpHeld = false;
-    if (!this.grounded && !this.jumpHeld && this.pvy < 0) {
-      this.pvy *= JUMP_CUT;
+    if (!a.jumpHeld && this.jumpHeld) {
       this.jumpHeld = false;
+      if (!this.grounded && this.pvy < 0) this.pvy *= JUMP_CUT;
     }
 
     if (!this.grounded) {
@@ -607,10 +615,10 @@ export class Engine {
   }
 
   private updateObstacles(dt: number) {
-    const px = this.scroll + PLAYER_X;
-    const py = this.py;
-    const pw = PLAYER_W;
-    const ph = this.ph();
+    const px = this.scroll + PLAYER_X + 10;
+    const py = this.py + 12;
+    const pw = PLAYER_W - 18;
+    const ph = Math.max(16, this.ph() - 16);
     const sub = this.speed > 700 ? 2 : 1;
     const sdt = dt / sub;
 
@@ -833,9 +841,9 @@ export class Engine {
     const ctx = this.ctx;
     const spr = this.sprites;
     const { dpr, scale, ox, oy } = this;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = "#0c0c0d";
-    ctx.fillRect(0, 0, this.viewW, this.viewH);
+    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     let shakeX = 0;
     let shakeY = 0;
@@ -875,10 +883,10 @@ export class Engine {
       const maxPan = Math.max(1, dw - WORLD_W);
       const t = (this.scroll * 0.02) % (maxPan * 2);
       const pan = t < maxPan ? t : maxPan * 2 - t;
-      ctx.drawImage(img, -pan, top, dw, height);
+      ctx.drawImage(img, this.worldLeft - pan, top, Math.max(dw, this.worldRight - this.worldLeft + pan), height);
     } else {
       ctx.fillStyle = "#1a1520";
-      ctx.fillRect(0, top, WORLD_W, height);
+      ctx.fillRect(this.worldLeft, top, this.worldRight - this.worldLeft, height);
     }
   }
 
@@ -906,15 +914,15 @@ export class Engine {
       const pattern = ctx.createPattern(this.ground, "repeat");
       if (pattern) {
         ctx.fillStyle = pattern;
-        ctx.fillRect(-patX, 0, WORLD_W - patX + 256, this.worldBottom - GROUND_Y + 80);
+        ctx.fillRect(-patX, 0, this.worldRight - this.worldLeft - patX + 256, this.worldBottom - GROUND_Y + 80);
       }
       ctx.restore();
     } else {
       ctx.fillStyle = "#1a1714";
-      ctx.fillRect(0, GROUND_Y, WORLD_W, this.worldBottom - GROUND_Y + 40);
+      ctx.fillRect(this.worldLeft, GROUND_Y, this.worldRight - this.worldLeft, this.worldBottom - GROUND_Y + 40);
     }
     ctx.fillStyle = "rgba(196,92,74,0.35)";
-    ctx.fillRect(0, GROUND_Y, WORLD_W, 2);
+    ctx.fillRect(this.worldLeft, GROUND_Y, this.worldRight - this.worldLeft, 2);
   }
 
   private drawPlayer(ctx: CanvasRenderingContext2D, spr: Sprites | null) {
@@ -1094,6 +1102,6 @@ export class Engine {
     g.addColorStop(0, "rgba(0,0,0,0)");
     g.addColorStop(1, "rgba(0,0,0,0.38)");
     ctx.fillStyle = g;
-    ctx.fillRect(0, this.worldTop, WORLD_W, this.worldBottom - this.worldTop);
+    ctx.fillRect(this.worldLeft, this.worldTop, this.worldRight - this.worldLeft, this.worldBottom - this.worldTop);
   }
 }

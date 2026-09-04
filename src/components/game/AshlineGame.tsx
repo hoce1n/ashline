@@ -65,10 +65,10 @@ export function AshlineGame() {
   const playing = hud.state === "playing" || hud.state === "dying";
 
   return (
-    <main className="relative h-dvh w-full overflow-hidden bg-bg text-fg select-none">
+    <main className="fixed inset-0 h-dvh w-full overflow-hidden bg-bg text-fg select-none">
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 h-full w-full touch-none"
+        className="absolute inset-0 block h-full w-full touch-none"
         aria-label="ASHLINE playfield"
       />
 
@@ -139,12 +139,18 @@ export function AshlineGame() {
           <Button
             type="button"
             variant="outline"
-            className="pointer-events-auto h-14 flex-1 rounded-[28px] border-border bg-surface/80 text-fg"
+            className="pointer-events-auto h-14 flex-1 touch-none rounded-[28px] border-border bg-surface/80 text-fg"
             onPointerDown={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              engineRef.current?.tapJump();
+              engineRef.current?.setJumpHeld(true);
             }}
+            onPointerUp={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              engineRef.current?.setJumpHeld(false);
+            }}
+            onPointerCancel={() => engineRef.current?.setJumpHeld(false)}
           >
             <ArrowUp className="size-4" />
             Jump
