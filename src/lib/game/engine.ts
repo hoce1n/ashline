@@ -217,7 +217,7 @@ export class Engine {
       loadImage("/sprites/player-slide.png"),
       loadImage("/sprites/crate.png"),
       loadImage("/sprites/beam.png"),
-      loadImage("/sprites/spike.png"),
+      loadImage("/sprites/spike.png?v=ember"),
       loadImage("/sprites/coin.png"),
       loadImage("/sprites/impact.png"),
       loadImage("/sprites/sky.jpg"),
@@ -970,15 +970,8 @@ export class Engine {
       const sx = o.x - this.scroll;
       if (sx > WORLD_W + 40 || sx + o.w < -80) continue;
       if (!spr) {
-        if (o.kind === "spike") {
-          ctx.fillStyle = "#d4893c";
-          ctx.beginPath();
-          ctx.moveTo(sx + o.w * 0.5, o.y);
-          ctx.lineTo(sx + o.w, o.y + o.h);
-          ctx.lineTo(sx, o.y + o.h);
-          ctx.closePath();
-          ctx.fill();
-        } else {
+        if (o.kind === "spike") this.drawSpikeHazard(ctx, sx, o.y, o.w, o.h);
+        else {
           ctx.fillStyle = "#3a342c";
           ctx.fillRect(sx, o.y, o.w, o.h);
         }
@@ -987,29 +980,62 @@ export class Engine {
       if (o.kind === "crate") {
         ctx.drawImage(spr.crate, sx - 18, o.y - 22, o.w + 36, o.h + 28);
       } else if (o.kind === "spike") {
-        const dx = sx - 20;
-        const dy = o.y - 14;
-        const dw = o.w + 40;
-        const dh = o.h + 22;
-        ctx.save();
-        ctx.shadowColor = "rgba(242, 196, 112, 0.95)";
-        ctx.shadowBlur = 16;
-        ctx.beginPath();
-        ctx.moveTo(sx + o.w * 0.5, o.y - 8);
-        ctx.lineTo(sx + o.w + 12, o.y + o.h + 2);
-        ctx.lineTo(sx - 12, o.y + o.h + 2);
-        ctx.closePath();
-        ctx.fillStyle = "#d4893c";
-        ctx.fill();
-        ctx.strokeStyle = "#f3e2c2";
-        ctx.lineWidth = 3;
-        ctx.stroke();
-        ctx.drawImage(spr.spike, dx, dy, dw, dh);
-        ctx.restore();
+        this.drawSpikeHazard(ctx, sx, o.y, o.w, o.h);
       } else {
         ctx.drawImage(spr.beam, sx - 28, o.y - 8, o.w + 56, o.h + 24);
       }
     }
+  }
+
+  private drawSpikeHazard(
+    ctx: CanvasRenderingContext2D,
+    sx: number,
+    y: number,
+    w: number,
+    h: number,
+  ) {
+    const mid = sx + w * 0.5;
+    const base = y + h;
+    ctx.save();
+    ctx.fillStyle = "rgba(232, 150, 56, 0.55)";
+    ctx.beginPath();
+    ctx.ellipse(mid, base + 1, w * 0.78, 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    const spr = this.sprites;
+    if (spr?.spike) {
+      ctx.shadowColor = "rgba(255, 186, 74, 0.9)";
+      ctx.shadowBlur = 14;
+      ctx.drawImage(spr.spike, sx - 16, y - 14, w + 32, h + 20);
+    } else {
+      const fangs = [
+        { t: 0.22, hh: 0.74, hw: 0.28 },
+        { t: 0.5, hh: 1, hw: 0.36 },
+        { t: 0.78, hh: 0.66, hw: 0.26 },
+      ];
+      for (const f of fangs) {
+        const cx = sx + w * f.t;
+        const top = base - h * f.hh;
+        const hw = w * f.hw;
+        const g = ctx.createLinearGradient(cx, top, cx, base);
+        g.addColorStop(0, "#f7e7c6");
+        g.addColorStop(0.25, "#f0b45a");
+        g.addColorStop(0.65, "#d46824");
+        g.addColorStop(1, "#7a2c14");
+        ctx.beginPath();
+        ctx.moveTo(cx, top);
+        ctx.lineTo(cx + hw, base);
+        ctx.lineTo(cx - hw, base);
+        ctx.closePath();
+        ctx.fillStyle = g;
+        ctx.fill();
+        ctx.strokeStyle = "#f4e4c4";
+        ctx.lineWidth = 2.4;
+        ctx.lineJoin = "round";
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
   }
 
   private drawCoins(ctx: CanvasRenderingContext2D, spr: Sprites | null) {

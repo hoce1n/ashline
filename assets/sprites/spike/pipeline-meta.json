@@ -10,7 +10,7 @@
   "rows": 1,
   "cols": 1,
   "cell_size": 128,
-  "fit_scale": 0.85,
+  "fit_scale": 0.9,
   "trim_border": 4,
   "edge_clean_depth": 3,
   "align": "bottom",
@@ -35,28 +35,28 @@
         1408
       ],
       "component_mode": "largest",
-      "component_count": 1,
-      "selected_component_area": 290796,
+      "component_count": 3,
+      "selected_component_area": 580168,
       "selected_component_bbox": [
-        287,
-        364,
-        1112,
-        1029
+        259,
+        158,
+        1144,
+        1233
       ],
       "crop_bbox": [
-        287,
-        364,
-        1112,
-        1029
+        259,
+        158,
+        1144,
+        1233
       ],
       "edge_touch": false,
       "output_size": [
-        108,
-        87
+        94,
+        115
       ],
       "paste_position": [
-        10,
-        32
+        17,
+        7
       ]
     }
   ],
