@@ -18,6 +18,8 @@ export class Input {
   private jumpTap = false;
   private slideTap = false;
   private confirmTap = false;
+  private jumpHold = false;
+  private jumpHoldUntil = 0;
   private pointerId: number | null = null;
   private startY = 0;
   private startX = 0;
@@ -52,6 +54,16 @@ export class Input {
   tapJump() {
     this.jumpTap = true;
     this.confirmTap = true;
+    this.jumpHoldUntil = Math.max(this.jumpHoldUntil, performance.now() + 280);
+  }
+
+  setJumpHeld(held: boolean) {
+    this.jumpHold = held;
+    if (held) {
+      this.jumpTap = true;
+      this.confirmTap = true;
+      this.jumpHoldUntil = 0;
+    }
   }
 
   tapSlide() {
@@ -59,7 +71,8 @@ export class Input {
   }
 
   sample(): Actions {
-    let jumpHeld = this.keysHas(JUMP_CODES) || this.jumpTap;
+    const tapHold = this.jumpHoldUntil > 0 && performance.now() < this.jumpHoldUntil;
+    let jumpHeld = this.keysHas(JUMP_CODES) || this.jumpTap || this.jumpHold || tapHold;
     let slideHeld = this.keysHas(SLIDE_CODES) || this.slideTap;
     let confirmHeld = this.keysHas(CONFIRM_CODES) || this.confirmTap;
 
@@ -87,6 +100,7 @@ export class Input {
     this.jumpTap = false;
     this.slideTap = false;
     this.confirmTap = false;
+    if (!tapHold) this.jumpHoldUntil = 0;
 
     return { jumpHeld, jumpPressed, slideHeld, slidePressed, confirmPressed };
   }
@@ -153,6 +167,7 @@ export class Input {
     if (!this.swiped && dt < 420 && dy < 36) {
       this.jumpTap = true;
       this.confirmTap = true;
+      this.jumpHoldUntil = Math.max(this.jumpHoldUntil, performance.now() + 280);
     }
     this.pointerId = null;
   };
