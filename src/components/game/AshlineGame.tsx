@@ -170,7 +170,7 @@ export function AshlineGame() {
 
 function TitleOverlay({ highScore }: { highScore: number }) {
   return (
-    <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center px-6">
+    <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center px-6 max-md:justify-start max-md:pt-[max(5.5rem,env(safe-area-inset-top))]">
       <div className="max-w-md text-center">
         <p className="ash-enter font-display text-xs tracking-[0.32em] text-muted uppercase">Dusk ridge courier</p>
         <h1 className="ash-enter-2 mt-3 font-display text-6xl font-bold tracking-[-0.04em] text-fg sm:text-7xl">

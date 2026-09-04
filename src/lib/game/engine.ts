@@ -154,6 +154,8 @@ export class Engine {
   private scale = 1;
   private ox = 0;
   private oy = 0;
+  private worldTop = 0;
+  private worldBottom = WORLD_H;
 
   private state: GameState = "title";
   private scroll = 0;
@@ -292,9 +294,18 @@ export class Engine {
     this.canvas.height = Math.floor(h * this.dpr);
     this.canvas.style.width = `${w}px`;
     this.canvas.style.height = `${h}px`;
-    this.scale = Math.max(w / WORLD_W, h / WORLD_H);
+    // Cover-scale cropped the runner off the left on tall phones. Fit the
+    // full 16:9 playfield, then pin the ground above on-screen controls.
+    const portrait = h > w;
+    const padBottom = portrait && w < 760 ? 96 : 0;
+    const availH = Math.max(1, h - padBottom);
+    this.scale = Math.min(w / WORLD_W, availH / WORLD_H);
     this.ox = (w / this.scale - WORLD_W) / 2;
-    this.oy = (h / this.scale - WORLD_H) / 2;
+    const extraY = availH / this.scale - WORLD_H;
+    const groundMargin = 12 / this.scale;
+    this.oy = Math.max(0, extraY - groundMargin);
+    this.worldTop = -this.oy;
+    this.worldBottom = -this.oy + h / this.scale;
   };
 
   private loop = (now: number) => {
@@ -855,18 +866,19 @@ export class Engine {
   }
 
   private drawSky(ctx: CanvasRenderingContext2D, spr: Sprites | null) {
+    const top = this.worldTop;
+    const height = GROUND_Y - top;
     if (spr) {
       const img = spr.sky;
       const extra = 0.18;
       const dw = WORLD_W * (1 + extra);
-      const dh = WORLD_H * (1 + extra);
-      const maxPan = dw - WORLD_W;
+      const maxPan = Math.max(1, dw - WORLD_W);
       const t = (this.scroll * 0.02) % (maxPan * 2);
       const pan = t < maxPan ? t : maxPan * 2 - t;
-      ctx.drawImage(img, -pan, -WORLD_H * extra * 0.4, dw, dh);
+      ctx.drawImage(img, -pan, top, dw, height);
     } else {
       ctx.fillStyle = "#1a1520";
-      ctx.fillRect(0, 0, WORLD_W, WORLD_H);
+      ctx.fillRect(0, top, WORLD_W, height);
     }
   }
 
@@ -894,12 +906,12 @@ export class Engine {
       const pattern = ctx.createPattern(this.ground, "repeat");
       if (pattern) {
         ctx.fillStyle = pattern;
-        ctx.fillRect(-patX, 0, WORLD_W - patX + 256, WORLD_H - GROUND_Y + 40);
+        ctx.fillRect(-patX, 0, WORLD_W - patX + 256, this.worldBottom - GROUND_Y + 80);
       }
       ctx.restore();
     } else {
       ctx.fillStyle = "#1a1714";
-      ctx.fillRect(0, GROUND_Y, WORLD_W, WORLD_H - GROUND_Y);
+      ctx.fillRect(0, GROUND_Y, WORLD_W, this.worldBottom - GROUND_Y + 40);
     }
     ctx.fillStyle = "rgba(196,92,74,0.35)";
     ctx.fillRect(0, GROUND_Y, WORLD_W, 2);
@@ -958,14 +970,42 @@ export class Engine {
       const sx = o.x - this.scroll;
       if (sx > WORLD_W + 40 || sx + o.w < -80) continue;
       if (!spr) {
-        ctx.fillStyle = "#3a342c";
-        ctx.fillRect(sx, o.y, o.w, o.h);
+        if (o.kind === "spike") {
+          ctx.fillStyle = "#d4893c";
+          ctx.beginPath();
+          ctx.moveTo(sx + o.w * 0.5, o.y);
+          ctx.lineTo(sx + o.w, o.y + o.h);
+          ctx.lineTo(sx, o.y + o.h);
+          ctx.closePath();
+          ctx.fill();
+        } else {
+          ctx.fillStyle = "#3a342c";
+          ctx.fillRect(sx, o.y, o.w, o.h);
+        }
         continue;
       }
       if (o.kind === "crate") {
         ctx.drawImage(spr.crate, sx - 18, o.y - 22, o.w + 36, o.h + 28);
       } else if (o.kind === "spike") {
-        ctx.drawImage(spr.spike, sx - 16, o.y - 10, o.w + 32, o.h + 16);
+        const dx = sx - 20;
+        const dy = o.y - 14;
+        const dw = o.w + 40;
+        const dh = o.h + 22;
+        ctx.save();
+        ctx.shadowColor = "rgba(242, 196, 112, 0.95)";
+        ctx.shadowBlur = 16;
+        ctx.beginPath();
+        ctx.moveTo(sx + o.w * 0.5, o.y - 8);
+        ctx.lineTo(sx + o.w + 12, o.y + o.h + 2);
+        ctx.lineTo(sx - 12, o.y + o.h + 2);
+        ctx.closePath();
+        ctx.fillStyle = "#d4893c";
+        ctx.fill();
+        ctx.strokeStyle = "#f3e2c2";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.drawImage(spr.spike, dx, dy, dw, dh);
+        ctx.restore();
       } else {
         ctx.drawImage(spr.beam, sx - 28, o.y - 8, o.w + 56, o.h + 24);
       }
@@ -1028,6 +1068,6 @@ export class Engine {
     g.addColorStop(0, "rgba(0,0,0,0)");
     g.addColorStop(1, "rgba(0,0,0,0.38)");
     ctx.fillStyle = g;
-    ctx.fillRect(0, 0, WORLD_W, WORLD_H);
+    ctx.fillRect(0, this.worldTop, WORLD_W, this.worldBottom - this.worldTop);
   }
 }
