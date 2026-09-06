@@ -65,10 +65,10 @@ export function AshlineGame() {
   const playing = hud.state === "playing" || hud.state === "dying";
 
   return (
-    <main className="fixed inset-0 h-dvh w-full overflow-hidden bg-bg text-fg select-none">
+    <main className="relative h-dvh w-full overflow-hidden bg-bg text-fg select-none">
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 block h-full w-full touch-none"
+        className="absolute inset-0 z-0 h-full w-full touch-none"
         aria-label="ASHLINE playfield"
       />
 
@@ -135,22 +135,15 @@ export function AshlineGame() {
       )}
 
       {ready && playing && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex gap-3 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] md:hidden">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex gap-3 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] md:hidden">
           <Button
             type="button"
             variant="outline"
-            className="pointer-events-auto h-14 flex-1 touch-none rounded-[28px] border-border bg-surface/80 text-fg"
+            className="pointer-events-auto h-14 flex-1 touch-manipulation rounded-[28px] border-border bg-surface/80 text-fg"
             onPointerDown={(e) => {
-              e.preventDefault();
               e.stopPropagation();
-              engineRef.current?.setJumpHeld(true);
+              engineRef.current?.tapJump();
             }}
-            onPointerUp={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              engineRef.current?.setJumpHeld(false);
-            }}
-            onPointerCancel={() => engineRef.current?.setJumpHeld(false)}
           >
             <ArrowUp className="size-4" />
             Jump
@@ -158,9 +151,8 @@ export function AshlineGame() {
           <Button
             type="button"
             variant="outline"
-            className="pointer-events-auto h-14 flex-1 rounded-[28px] border-border bg-surface/80 text-fg"
+            className="pointer-events-auto h-14 flex-1 touch-manipulation rounded-[28px] border-border bg-surface/80 text-fg"
             onPointerDown={(e) => {
-              e.preventDefault();
               e.stopPropagation();
               engineRef.current?.tapSlide();
             }}
